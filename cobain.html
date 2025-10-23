@@ -47,6 +47,11 @@
             height: 120px; 
             object-fit: contain; 
         }
+        .logo2 {
+            width: 200px; 
+            height: 200px; 
+            object-fit: contain; 
+        }
         
         .header h1 {
             font-size: 2.5em;
@@ -155,26 +160,39 @@
         }
         
         .instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
             display: flex;
-            align-items: center; 
-            gap: 10px; 
+            align-items: flex-start;
+            gap: 30px;
+        }
+        
+        .instructions-content {
+            flex: 1;
         }
         
         .instructions h3 {
-            margin: 0; 
+            color: #1976d2;
+            margin-bottom: 10px;
         }
         
         .instructions ol {
             margin-left: 20px;
+            margin-bottom: 0;
         }
         
         .instructions li {
             margin: 5px 0;
         }
-
-        .logo2 {
-            height: 60px; 
-            width: auto;
+        
+        .instructions .logo2 {
+            flex-shrink: 0;
+            align-self: center;
+            width: 180px;
+            height: 180px;
         }
         
         .stats-grid {
@@ -202,6 +220,17 @@
             font-size: 32px;
             font-weight: bold;
         }
+
+        .debug-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -216,15 +245,17 @@
         </div>
         
         <div class="instructions">
-            <h3>⚠️ Panduan Penggunaan</h3>
-            <ol>
-                <li>Buka Google Sheets Anda</li>
-                <li>Klik <strong>File → Share → Publish to web</strong></li>
-                <li>Pilih sheet yang ingin dipublikasikan</li>
-                <li>Format: <strong>Comma-separated values (.csv)</strong></li>
-                <li>Klik <strong>Publish</strong> dan salin link CSV</li>
-            </ol>
-             <img src="Logo berakhlak.png" alt="Logo BerAkhlak" class="logo2">
+            <div class="instructions-content">
+                <h3>⚠️ Panduan Penggunaan</h3>
+                <ol>
+                    <li>Buka Google Sheets Anda</li>
+                    <li>Klik <strong>File → Share → Publish to web</strong></li>
+                    <li>Pilih sheet yang ingin dipublikasikan</li>
+                    <li>Format: <strong>Comma-separated values (.csv)</strong></li>
+                    <li>Klik <strong>Publish</strong> dan salin link CSV</li>
+                </ol>
+            </div>
+            <img src="Logo berakhlak.png" alt="Logo BerAkhlak" class="logo2">
         </div>
         
         <div class="tabs">
@@ -414,66 +445,84 @@
             if (!dateStr || dateStr.trim() === '') return null;
             
             const cleanDate = dateStr.trim();
-            let day, month, year;
             
+            // Format DD/MM/YYYY atau DD-MM-YYYY atau DD.MM.YYYY (format Indonesia)
             let match = cleanDate.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
             if (match) {
-                day = parseInt(match[1]);
-                month = parseInt(match[2]);
-                year = parseInt(match[3]);
+                const day = parseInt(match[1]);
+                const month = parseInt(match[2]);
+                const year = parseInt(match[3]);
                 
-                if (day > 12 && month <= 12) {
-                    return new Date(year, month - 1, day);
-                }
-                else if (month > 12 && day <= 12) {
-                    return new Date(year, day - 1, month);
-                }
-                else if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                // Validasi tanggal
+                if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 1900 && year <= 2100) {
                     return new Date(year, month - 1, day);
                 }
             }
             
+            // Format YYYY/MM/DD atau YYYY-MM-DD
             match = cleanDate.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
             if (match) {
-                year = parseInt(match[1]);
-                month = parseInt(match[2]);
-                day = parseInt(match[3]);
-                if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                const year = parseInt(match[1]);
+                const month = parseInt(match[2]);
+                const day = parseInt(match[3]);
+                
+                if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 1900 && year <= 2100) {
                     return new Date(year, month - 1, day);
                 }
             }
             
+            // Format MM/DD/YYYY (format Amerika)
+            match = cleanDate.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+            if (match) {
+                const first = parseInt(match[1]);
+                const second = parseInt(match[2]);
+                const year = parseInt(match[3]);
+                
+                // Coba sebagai MM/DD/YYYY jika first <= 12
+                if (first <= 12 && second <= 31) {
+                    return new Date(year, first - 1, second);
+                }
+            }
+            
+            // Coba parse dengan Date constructor sebagai fallback
             try {
                 const parsed = new Date(cleanDate);
-                if (!isNaN(parsed.getTime()) && parsed.getFullYear() > 1900) {
+                if (!isNaN(parsed.getTime()) && parsed.getFullYear() >= 1900 && parsed.getFullYear() <= 2100) {
                     return parsed;
                 }
             } catch (e) {
+                // Ignore
             }
             
             return null;
         }
         
         function findDateColumn(columns, sheetName) {
-            const lower = columns.map(c => c.toLowerCase());
+            const lower = columns.map(c => c.toLowerCase().trim());
             
+            // Pattern spesifik untuk setiap sheet
             const patterns = {
-                'stblkk': ['tgl stblkk', 'tanggal stblkk', 'tgl', 'tanggal'],
-                'spb': ['tgl spb', 'tanggal spb', 'tgl', 'tanggal'],
-                'skkp': ['tgl skkp', 'tanggal skkp', 'tgl', 'tanggal'],
-                'shti': ['tgl shti', 'tanggal shti', 'tgl', 'tanggal'],
-                'perizinan-pusat': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl'],
-                'perizinan-daerah': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl'],
-                'pkl': ['tanggal', 'tgl']
+                'stblkk': ['tgl stblkk', 'tanggal stblkk', 'tgl', 'tanggal', 'date'],
+                'spb': ['tgl spb', 'tanggal spb', 'tgl', 'tanggal', 'date'],
+                'skkp': ['tgl skkp', 'tanggal skkp', 'tgl', 'tanggal', 'date'],
+                'shti': ['tgl shti', 'tanggal shti', 'tgl', 'tanggal', 'date'],
+                'perizinan-pusat': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl', 'date'],
+                'perizinan-daerah': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl', 'date'],
+                'pkl': ['tanggal', 'tgl', 'date']
             };
             
             const searchPatterns = patterns[sheetName] || ['tanggal', 'tgl', 'date'];
             
+            // Cari kolom yang cocok
             for (const pattern of searchPatterns) {
                 const idx = lower.findIndex(col => col.includes(pattern));
-                if (idx !== -1) return columns[idx];
+                if (idx !== -1) {
+                    console.log(`[${sheetName}] Kolom tanggal ditemukan: "${columns[idx]}" (pattern: "${pattern}")`);
+                    return columns[idx];
+                }
             }
             
+            console.warn(`[${sheetName}] Kolom tanggal tidak ditemukan. Kolom tersedia:`, columns);
             return null;
         }
         
@@ -498,8 +547,9 @@
             
             let validCount = 0;
             let invalidCount = 0;
+            const debugInfo = [];
             
-            data.forEach(row => {
+            data.forEach((row, idx) => {
                 const dateValue = row[dateColumn];
                 const parsedDate = parseDate(dateValue);
                 
@@ -515,10 +565,22 @@
                         monthlyMap.set(key, { label: label, count: 0, date: new Date(year, month, 1) });
                     }
                     monthlyMap.get(key).count++;
+                    
+                    // Debug untuk 5 data pertama
+                    if (idx < 5) {
+                        debugInfo.push(`Row ${idx + 1}: "${dateValue}" → ${parsedDate.toLocaleDateString('id-ID')}`);
+                    }
                 } else if (dateValue && dateValue.trim() !== '') {
                     invalidCount++;
+                    if (idx < 5) {
+                        debugInfo.push(`Row ${idx + 1}: "${dateValue}" → INVALID`);
+                    }
                 }
             });
+            
+            // Tampilkan debug info
+            console.log(`[${sheetName}] Debug Info:`, debugInfo);
+            console.log(`[${sheetName}] Valid: ${validCount}, Invalid: ${invalidCount}, Total: ${data.length}`);
             
             const sortedEntries = Array.from(monthlyMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
             
@@ -529,7 +591,8 @@
                 canvas.parentElement.innerHTML = `<div class="error">Tidak ada data tanggal yang valid ditemukan. 
                     <br>Valid: ${validCount}, Invalid: ${invalidCount}, Total: ${data.length}
                     <br>Kolom yang digunakan: ${dateColumn}
-                    <br>Contoh data: ${data.slice(0, 3).map(r => r[dateColumn]).join(', ')}</div>`;
+                    <br><br>Contoh data: 
+                    <div class="debug-info">${debugInfo.join('<br>')}</div></div>`;
                 return;
             }
             
@@ -578,7 +641,7 @@
                             },
                             title: {
                                 display: true,
-                                text: `Grafik Batang - ${sheetName.toUpperCase()}`,
+                                text: `Grafik Batang - ${sheetName.toUpperCase()} (${validCount}/${totalCount} data valid)`,
                                 font: {
                                     size: 16,
                                     weight: 'bold'
@@ -586,8 +649,8 @@
                             },
                             tooltip: {
                                 callbacks: {
-                                    afterLabel: function(context) {
-                                        return `${validCount} data valid dari ${totalCount} total`;
+                                    label: function(context) {
+                                        return `Jumlah: ${context.parsed.y}`;
                                     }
                                 }
                             }
@@ -649,17 +712,10 @@
                             },
                             title: {
                                 display: true,
-                                text: `Grafik Garis - ${sheetName.toUpperCase()}`,
+                                text: `Grafik Garis - ${sheetName.toUpperCase()} (${validCount}/${totalCount} data valid)`,
                                 font: {
                                     size: 16,
                                     weight: 'bold'
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    afterLabel: function(context) {
-                                        return `${validCount} data valid dari ${totalCount} total`;
-                                    }
                                 }
                             }
                         },
@@ -720,7 +776,7 @@
                             },
                             title: {
                                 display: true,
-                                text: `Diagram Donat - ${sheetName.toUpperCase()}`,
+                                text: `Diagram Donat - ${sheetName.toUpperCase()} (${validCount}/${totalCount} data valid)`,
                                 font: {
                                     size: 16,
                                     weight: 'bold'
