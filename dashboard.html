@@ -35,7 +35,6 @@
             border-radius: 15px;
         }
 
-        /* 🔹 Tambahan untuk logo dan judul */
         .title-with-logo {
             display: flex;
             align-items: center;
@@ -46,6 +45,11 @@
         .logo {
             width: 120px; 
             height: 120px; 
+            object-fit: contain; 
+        }
+        .logo2 {
+            width: 200px; 
+            height: 200px; 
             object-fit: contain; 
         }
         
@@ -201,16 +205,28 @@
             font-size: 32px;
             font-weight: bold;
         }
+
+        .debug-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <div class="title-with-logo">
-                <img src="logokkp.png" alt="Logo KKP" class="logo">
-                <h1> Dashboard SINPELKESPPSK-KENDARI</h1>
+                <img src="Logo Pelabuhan.png" alt="Logo Pelabuhan" class="logo">
+                <h1>SINPELKESPPSK-KENDARI</h1>
+                 <img src="logokkp.png" alt="Logo KKP" class="logo">
             </div>
-    <p>Visualisasi Data dari Google Sheets</p>
+            <p>Dashboard Sistem Informasi Pelayanan Kesyahbandaran PPS Kendari</p>
         </div>
         
         <div class="instructions">
@@ -221,6 +237,7 @@
                 <li>Pilih sheet yang ingin dipublikasikan</li>
                 <li>Format: <strong>Comma-separated values (.csv)</strong></li>
                 <li>Klik <strong>Publish</strong> dan salin link CSV</li>
+                <img src="Logo berakhlak.png" alt="Logo BerAkhlak" class="logo2">
             </ol>
         </div>
         
@@ -407,49 +424,53 @@
             `;
         }
         
-        // Fungsi parsing tanggal yang lebih robust
         function parseDate(dateStr) {
             if (!dateStr || dateStr.trim() === '') return null;
             
             const cleanDate = dateStr.trim();
-            let day, month, year;
             
-            // Format: DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
+            // Format DD/MM/YYYY atau DD-MM-YYYY atau DD.MM.YYYY (format Indonesia)
             let match = cleanDate.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
             if (match) {
-                day = parseInt(match[1]);
-                month = parseInt(match[2]);
-                year = parseInt(match[3]);
+                const day = parseInt(match[1]);
+                const month = parseInt(match[2]);
+                const year = parseInt(match[3]);
                 
-                // Validasi: jika day > 12 dan month <= 12, kemungkinan format DD/MM/YYYY
-                if (day > 12 && month <= 12) {
-                    return new Date(year, month - 1, day);
-                }
-                // Jika month > 12 dan day <= 12, kemungkinan format MM/DD/YYYY
-                else if (month > 12 && day <= 12) {
-                    return new Date(year, day - 1, month);
-                }
-                // Asumsikan DD/MM/YYYY untuk format Indonesia
-                else if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                // Validasi tanggal
+                if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 1900 && year <= 2100) {
                     return new Date(year, month - 1, day);
                 }
             }
             
-            // Format: YYYY-MM-DD, YYYY/MM/DD
+            // Format YYYY/MM/DD atau YYYY-MM-DD
             match = cleanDate.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
             if (match) {
-                year = parseInt(match[1]);
-                month = parseInt(match[2]);
-                day = parseInt(match[3]);
-                if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                const year = parseInt(match[1]);
+                const month = parseInt(match[2]);
+                const day = parseInt(match[3]);
+                
+                if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 1900 && year <= 2100) {
                     return new Date(year, month - 1, day);
                 }
             }
             
-            // Coba parse dengan Date constructor
+            // Format MM/DD/YYYY (format Amerika)
+            match = cleanDate.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+            if (match) {
+                const first = parseInt(match[1]);
+                const second = parseInt(match[2]);
+                const year = parseInt(match[3]);
+                
+                // Coba sebagai MM/DD/YYYY jika first <= 12
+                if (first <= 12 && second <= 31) {
+                    return new Date(year, first - 1, second);
+                }
+            }
+            
+            // Coba parse dengan Date constructor sebagai fallback
             try {
                 const parsed = new Date(cleanDate);
-                if (!isNaN(parsed.getTime()) && parsed.getFullYear() > 1900) {
+                if (!isNaN(parsed.getTime()) && parsed.getFullYear() >= 1900 && parsed.getFullYear() <= 2100) {
                     return parsed;
                 }
             } catch (e) {
@@ -459,28 +480,32 @@
             return null;
         }
         
-        // Fungsi untuk menemukan kolom tanggal
         function findDateColumn(columns, sheetName) {
-            const lower = columns.map(c => c.toLowerCase());
+            const lower = columns.map(c => c.toLowerCase().trim());
             
-            // Prioritas pencarian berdasarkan sheet
+            // Pattern spesifik untuk setiap sheet
             const patterns = {
-                'stblkk': ['tgl stblkk', 'tanggal stblkk', 'tgl', 'tanggal'],
-                'spb': ['tgl spb', 'tanggal spb', 'tgl', 'tanggal'],
-                'skkp': ['tgl skkp', 'tanggal skkp', 'tgl', 'tanggal'],
-                'shti': ['tgl shti', 'tanggal shti', 'tgl', 'tanggal'],
-                'perizinan-pusat': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl'],
-                'perizinan-daerah': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl'],
-                'pkl': ['tanggal', 'tgl']
+                'stblkk': ['tgl stblkk', 'tanggal stblkk', 'tgl', 'tanggal', 'date'],
+                'spb': ['tgl spb', 'tanggal spb', 'tgl', 'tanggal', 'date'],
+                'skkp': ['tgl skkp', 'tanggal skkp', 'tgl', 'tanggal', 'date'],
+                'shti': ['tgl shti', 'tanggal shti', 'tgl', 'tanggal', 'date'],
+                'perizinan-pusat': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl', 'date'],
+                'perizinan-daerah': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl', 'date'],
+                'pkl': ['tanggal', 'tgl', 'date']
             };
             
             const searchPatterns = patterns[sheetName] || ['tanggal', 'tgl', 'date'];
             
+            // Cari kolom yang cocok
             for (const pattern of searchPatterns) {
                 const idx = lower.findIndex(col => col.includes(pattern));
-                if (idx !== -1) return columns[idx];
+                if (idx !== -1) {
+                    console.log(`[${sheetName}] Kolom tanggal ditemukan: "${columns[idx]}" (pattern: "${pattern}")`);
+                    return columns[idx];
+                }
             }
             
+            console.warn(`[${sheetName}] Kolom tanggal tidak ditemukan. Kolom tersedia:`, columns);
             return null;
         }
         
@@ -500,14 +525,14 @@
                 return;
             }
             
-            // Gunakan Map untuk menghitung per bulan dengan Date object sebagai key
             const monthlyMap = new Map();
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
             
             let validCount = 0;
             let invalidCount = 0;
+            const debugInfo = [];
             
-            data.forEach(row => {
+            data.forEach((row, idx) => {
                 const dateValue = row[dateColumn];
                 const parsedDate = parseDate(dateValue);
                 
@@ -516,7 +541,6 @@
                     const year = parsedDate.getFullYear();
                     const month = parsedDate.getMonth();
                     
-                    // Buat key unik untuk sorting: YYYY-MM
                     const key = `${year}-${String(month + 1).padStart(2, '0')}`;
                     const label = `${monthNames[month]} ${year}`;
                     
@@ -524,12 +548,23 @@
                         monthlyMap.set(key, { label: label, count: 0, date: new Date(year, month, 1) });
                     }
                     monthlyMap.get(key).count++;
+                    
+                    // Debug untuk 5 data pertama
+                    if (idx < 5) {
+                        debugInfo.push(`Row ${idx + 1}: "${dateValue}" → ${parsedDate.toLocaleDateString('id-ID')}`);
+                    }
                 } else if (dateValue && dateValue.trim() !== '') {
                     invalidCount++;
+                    if (idx < 5) {
+                        debugInfo.push(`Row ${idx + 1}: "${dateValue}" → INVALID`);
+                    }
                 }
             });
             
-            // Sort berdasarkan key (YYYY-MM) untuk urutan kronologis
+            // Tampilkan debug info
+            console.log(`[${sheetName}] Debug Info:`, debugInfo);
+            console.log(`[${sheetName}] Valid: ${validCount}, Invalid: ${invalidCount}, Total: ${data.length}`);
+            
             const sortedEntries = Array.from(monthlyMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
             
             const labels = sortedEntries.map(entry => entry[1].label);
@@ -539,11 +574,214 @@
                 canvas.parentElement.innerHTML = `<div class="error">Tidak ada data tanggal yang valid ditemukan. 
                     <br>Valid: ${validCount}, Invalid: ${invalidCount}, Total: ${data.length}
                     <br>Kolom yang digunakan: ${dateColumn}
-                    <br>Contoh data: ${data.slice(0, 3).map(r => r[dateColumn]).join(', ')}</div>`;
+                    <br><br>Contoh data: 
+                    <div class="debug-info">${debugInfo.join('<br>')}</div></div>`;
                 return;
             }
             
-            charts[sheetName] = new Chart(ctx, {
+            const chartConfig = getChartConfig(sheetName, labels, counts, validCount, data.length);
+            
+            charts[sheetName] = new Chart(ctx, chartConfig);
+        }
+        
+        function getChartConfig(sheetName, labels, counts, validCount, totalCount) {
+            const colors = [
+                'rgba(102, 126, 234, 0.8)',
+                'rgba(118, 75, 162, 0.8)',
+                'rgba(237, 100, 166, 0.8)',
+                'rgba(255, 154, 158, 0.8)',
+                'rgba(250, 208, 196, 0.8)',
+                'rgba(154, 236, 219, 0.8)',
+                'rgba(66, 214, 164, 0.8)',
+                'rgba(46, 213, 115, 0.8)',
+                'rgba(72, 219, 251, 0.8)',
+                'rgba(83, 82, 237, 0.8)',
+                'rgba(254, 202, 87, 0.8)',
+                'rgba(255, 107, 107, 0.8)'
+            ];
+            
+            if (sheetName === 'stblkk' || sheetName === 'skkp' || sheetName === 'pkl') {
+                return {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Jumlah Data per Bulan',
+                            data: counts,
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            title: {
+                                display: true,
+                                text: `Grafik Batang - ${sheetName.toUpperCase()} (${validCount}/${totalCount} data valid)`,
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Jumlah: ${context.parsed.y}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    precision: 0
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Data'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Bulan'
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+            
+            if (sheetName === 'spb' || sheetName === 'shti') {
+                return {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Trend Data per Bulan',
+                            data: counts,
+                            backgroundColor: 'rgba(118, 75, 162, 0.2)',
+                            borderColor: 'rgba(118, 75, 162, 1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: 'rgba(118, 75, 162, 1)',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            title: {
+                                display: true,
+                                text: `Grafik Garis - ${sheetName.toUpperCase()} (${validCount}/${totalCount} data valid)`,
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    precision: 0
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Jumlah Data'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Bulan'
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+            
+            if (sheetName === 'perizinan-pusat' || sheetName === 'perizinan-daerah') {
+                return {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Distribusi Data',
+                            data: counts,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'right',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: `Diagram Donat - ${sheetName.toUpperCase()} (${validCount}/${totalCount} data valid)`,
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+            
+            return {
                 type: 'bar',
                 data: {
                     labels: labels,
@@ -571,13 +809,6 @@
                                 size: 16,
                                 weight: 'bold'
                             }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                afterLabel: function(context) {
-                                    return `${validCount} data valid dari ${data.length} total`;
-                                }
-                            }
                         }
                     },
                     scales: {
@@ -586,25 +817,11 @@
                             ticks: {
                                 stepSize: 1,
                                 precision: 0
-                            },
-                            title: {
-                                display: true,
-                                text: 'Jumlah Data'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45
-                            },
-                            title: {
-                                display: true,
-                                text: 'Bulan'
                             }
                         }
                     }
                 }
-            });
+            };
         }
         
         function createTable(sheetName, data) {
