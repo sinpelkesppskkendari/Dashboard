@@ -6,231 +6,45 @@
     <title>Dashboard Data Google Sheets</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-        }
-
-        .title-with-logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .logo {
-            width: 120px; 
-            height: 120px; 
-            object-fit: contain; 
-        }
-        .logo2 {
-            width: 200px; 
-            height: 200px; 
-            object-fit: contain; 
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .tab-button {
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .tab-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        .tab-button.active {
-            background: white;
-            color: #667eea;
-        }
-        
-        .content-section {
-            display: none;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .content-section.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 400px;
-            margin: 20px 0;
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 30px;
-            overflow-x: auto;
-            display: block;
-        }
-        
-        .data-table table {
-            width: 100%;
-            min-width: 600px;
-        }
-        
-        .data-table th,
-        .data-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .data-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
-        }
-        
-        .data-table tr:hover {
-            background: #f5f5f5;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #667eea;
-            font-size: 18px;
-        }
-        
-        .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        
-        .instructions {
-            background: #e3f2fd;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #2196f3;
-            display: flex;
-            align-items: flex-start;
-            gap: 30px;
-        }
-        
-        .instructions-content {
-            flex: 1;
-        }
-        
-        .instructions h3 {
-            color: #1976d2;
-            margin-bottom: 10px;
-        }
-        
-        .instructions ol {
-            margin-left: 20px;
-            margin-bottom: 0;
-        }
-        
-        .instructions li {
-            margin: 5px 0;
-        }
-        
-        .instructions .logo2 {
-            flex-shrink: 0;
-            align-self: center;
-            width: 180px;
-            height: 180px;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-card h3 {
-            font-size: 14px;
-            margin-bottom: 10px;
-            opacity: 0.9;
-        }
-        
-        .stat-card .number {
-            font-size: 32px;
-            font-weight: bold;
-        }
-
-        .debug-info {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
+     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; padding: 20px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; }
+        .title-with-logo { display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .logo { width: 120px; height: 120px; object-fit: contain; }
+        .logo2 { width: 200px; height: 200px; object-fit: contain; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+        .tab-button { padding: 12px 24px; background: rgba(255, 255, 255, 0.2); color: white; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s ease; }
+        .tab-button:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+        .tab-button.active { background: white; color: #667eea; }
+        .content-section { display: none; background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+        .content-section.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .chart-container { position: relative; height: 400px; margin: 20px 0; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 30px; overflow-x: auto; display: block; }
+        .data-table table { width: 100%; min-width: 600px; }
+        .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        .data-table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold; position: sticky; top: 0; }
+        .data-table tr:hover { background: #f5f5f5; }
+        .loading { text-align: center; padding: 40px; color: #667eea; font-size: 18px; }
+        .error { background: #ffebee; color: #c62828; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .instructions { background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #2196f3; display: flex; align-items: flex-start; gap: 30px; }
+        .instructions-content { flex: 1; }
+        .instructions h3 { color: #1976d2; margin-bottom: 10px; }
+        .instructions ol { margin-left: 20px; margin-bottom: 0; }
+        .instructions li { margin: 5px 0; }
+        .instructions .logo2 { flex-shrink: 0; align-self: center; width: 180px; height: 180px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; }
+        .stat-card h3 { font-size: 14px; margin-bottom: 10px; opacity: 0.9; }
+        .stat-card .number { font-size: 32px; font-weight: bold; }
+        .search-container { margin: 20px 0; display: flex; gap: 10px; align-items: center; }
+        .search-box { flex: 1; padding: 12px 20px; border: 2px solid #667eea; border-radius: 10px; font-size: 16px; outline: none; transition: all 0.3s ease; }
+        .search-box:focus { border-color: #764ba2; box-shadow: 0 0 10px rgba(102, 126, 234, 0.3); }
+        .search-info { color: #667eea; font-size: 14px; font-weight: bold; }
+        .highlight { background-color: yellow; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -239,7 +53,7 @@
             <div class="title-with-logo">
                 <img src="Logo Pelabuhan.png" alt="Logo Pelabuhan" class="logo">
                 <h1>SINPELKESPPSK-KENDARI</h1>
-                 <img src="logokkp.png" alt="Logo KKP" class="logo">
+                <img src="logokkp.png" alt="Logo KKP" class="logo">
             </div>
             <p>Dashboard Sistem Informasi Pelayanan Kesyahbandaran PPS Kendari</p>
         </div>
@@ -272,9 +86,11 @@
             <h2>STBLKK (Surat Tanda Bukti Lapor Kedatangan Kapal)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-stblkk"></div>
-            <div class="chart-container">
-                <canvas id="chart-stblkk"></canvas>
+            <div class="search-container" id="search-stblkk" style="display: none;">
+                <input type="text" class="search-box" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" oninput="searchTable('stblkk', this.value)">
+                <span class="search-info" id="search-info-stblkk"></span>
             </div>
+            <div class="chart-container"><canvas id="chart-stblkk"></canvas></div>
             <div class="data-table" id="table-stblkk"></div>
         </div>
         
@@ -282,9 +98,11 @@
             <h2>SPB (Surat Persetujuan Berlayar)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-spb"></div>
-            <div class="chart-container">
-                <canvas id="chart-spb"></canvas>
+            <div class="search-container" id="search-spb" style="display: none;">
+                <input type="text" class="search-box" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" oninput="searchTable('spb', this.value)">
+                <span class="search-info" id="search-info-spb"></span>
             </div>
+            <div class="chart-container"><canvas id="chart-spb"></canvas></div>
             <div class="data-table" id="table-spb"></div>
         </div>
         
@@ -292,9 +110,11 @@
             <h2>SKKP (Sertifikat Kelaikan Kapal Perikanan)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-skkp"></div>
-            <div class="chart-container">
-                <canvas id="chart-skkp"></canvas>
+            <div class="search-container" id="search-skkp" style="display: none;">
+                <input type="text" class="search-box" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" oninput="searchTable('skkp', this.value)">
+                <span class="search-info" id="search-info-skkp"></span>
             </div>
+            <div class="chart-container"><canvas id="chart-skkp"></canvas></div>
             <div class="data-table" id="table-skkp"></div>
         </div>
         
@@ -302,9 +122,11 @@
             <h2>SHTI (Sertifikat Hasil Tangkapan Ikan)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-shti"></div>
-            <div class="chart-container">
-                <canvas id="chart-shti"></canvas>
+            <div class="search-container" id="search-shti" style="display: none;">
+                <input type="text" class="search-box" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" oninput="searchTable('shti', this.value)">
+                <span class="search-info" id="search-info-shti"></span>
             </div>
+            <div class="chart-container"><canvas id="chart-shti"></canvas></div>
             <div class="data-table" id="table-shti"></div>
         </div>
         
@@ -312,9 +134,11 @@
             <h2>Perizinan Pusat</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-perizinan-pusat"></div>
-            <div class="chart-container">
-                <canvas id="chart-perizinan-pusat"></canvas>
+            <div class="search-container" id="search-perizinan-pusat" style="display: none;">
+                <input type="text" class="search-box" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" oninput="searchTable('perizinan-pusat', this.value)">
+                <span class="search-info" id="search-info-perizinan-pusat"></span>
             </div>
+            <div class="chart-container"><canvas id="chart-perizinan-pusat"></canvas></div>
             <div class="data-table" id="table-perizinan-pusat"></div>
         </div>
         
@@ -322,9 +146,11 @@
             <h2>Perizinan Daerah</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-perizinan-daerah"></div>
-            <div class="chart-container">
-                <canvas id="chart-perizinan-daerah"></canvas>
+            <div class="search-container" id="search-perizinan-daerah" style="display: none;">
+                <input type="text" class="search-box" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" oninput="searchTable('perizinan-daerah', this.value)">
+                <span class="search-info" id="search-info-perizinan-daerah"></span>
             </div>
+            <div class="chart-container"><canvas id="chart-perizinan-daerah"></canvas></div>
             <div class="data-table" id="table-perizinan-daerah"></div>
         </div>
         
@@ -332,9 +158,11 @@
             <h2>PKL (Perjanjian Kerja Laut)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-pkl"></div>
-            <div class="chart-container">
-                <canvas id="chart-pkl"></canvas>
+            <div class="search-container" id="search-pkl" style="display: none;">
+                <input type="text" class="search-box" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" oninput="searchTable('pkl', this.value)">
+                <span class="search-info" id="search-info-pkl"></span>
             </div>
+            <div class="chart-container"><canvas id="chart-pkl"></canvas></div>
             <div class="data-table" id="table-pkl"></div>
         </div>
     </div>
