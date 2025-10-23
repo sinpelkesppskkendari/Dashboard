@@ -858,6 +858,26 @@
             tableHTML += '</tbody></table>';
             tableContainer.innerHTML = tableHTML;
         }
+
+        function searchTable(n, q) {
+            const tc = document.getElementById(`table-${n}`), si = document.getElementById(`search-info-${n}`), tb = tc.querySelector('table');
+            if (!tb) return;
+            const rows = tb.querySelectorAll('tbody tr');
+            q = q.toLowerCase().trim();
+            if (q.length < 2) { rows.forEach(r => { r.style.display = ''; r.querySelectorAll('td').forEach(c => c.innerHTML = c.textContent); }); si.textContent = ''; return; }
+            let v = 0;
+            rows.forEach(r => {
+                const cells = r.querySelectorAll('td');
+                let f = false;
+                cells.forEach(c => {
+                    const txt = c.textContent.toLowerCase();
+                    if (txt.includes(q)) { f = true; const rx = new RegExp(`(${q})`, 'gi'); c.innerHTML = c.textContent.replace(rx, '<span class="highlight">$1</span>'); } else c.innerHTML = c.textContent;
+                });
+                r.style.display = f ? '' : 'none';
+                if (f) v++;
+            });
+            si.textContent = `Ditemukan: ${v} dari ${rows.length} data`;
+        }
         
         window.onload = function() {
             loadData('stblkk');
