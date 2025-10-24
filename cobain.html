@@ -3,286 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Data Google Sheets</title>
+    <title>Dashboard SINPELKESPPSK-KENDARI</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-        }
-
-        .title-with-logo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .logo {
-            width: 120px; 
-            height: 120px; 
-            object-fit: contain; 
-        }
-        .logo2 {
-            width: 200px; 
-            height: 200px; 
-            object-fit: contain; 
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .tab-button {
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .tab-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        .tab-button.active {
-            background: white;
-            color: #667eea;
-        }
-        
-        .content-section {
-            display: none;
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-        
-        .content-section.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 400px;
-            margin: 20px 0;
-        }
-        
-        .search-container {
-            margin: 20px 0;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .search-input {
-            flex: 1;
-            padding: 12px 20px;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        
-        .search-input:focus {
-            border-color: #764ba2;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
-        }
-        
-        .search-info {
-            padding: 10px 20px;
-            background: #e3f2fd;
-            border-radius: 8px;
-            color: #1976d2;
-            font-weight: bold;
-        }
-        
-        .clear-search {
-            padding: 12px 20px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        
-        .clear-search:hover {
-            background: #d32f2f;
-            transform: translateY(-2px);
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 30px;
-            overflow-x: auto;
-            display: block;
-        }
-        
-        .data-table table {
-            width: 100%;
-            min-width: 600px;
-        }
-        
-        .data-table th,
-        .data-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .data-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
-        }
-        
-        .data-table tr:hover {
-            background: #f5f5f5;
-        }
-        
-        .highlight {
-            background-color: yellow;
-            font-weight: bold;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #667eea;
-            font-size: 18px;
-        }
-        
-        .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        
-        .instructions {
-            background: #e3f2fd;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #2196f3;
-            display: flex;
-            align-items: flex-start;
-            gap: 30px;
-        }
-        
-        .instructions-content {
-            flex: 1;
-        }
-        
-        .instructions h3 {
-            color: #1976d2;
-            margin-bottom: 10px;
-        }
-        
-        .instructions ol {
-            margin-left: 20px;
-            margin-bottom: 0;
-        }
-        
-        .instructions li {
-            margin: 5px 0;
-        }
-        
-        .instructions .logo2 {
-            flex-shrink: 0;
-            align-self: center;
-            width: 180px;
-            height: 180px;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-card h3 {
-            font-size: 14px;
-            margin-bottom: 10px;
-            opacity: 0.9;
-        }
-        
-        .stat-card .number {
-            font-size: 32px;
-            font-weight: bold;
-        }
-
-        .debug-info {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; padding: 20px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 15px; }
+        .title-with-logo { display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .logo { width: 120px; height: 120px; object-fit: contain; }
+        .logo2 { width: 200px; height: 200px; object-fit: contain; }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+        .tab-button { padding: 12px 24px; background: rgba(255, 255, 255, 0.2); color: white; border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s ease; }
+        .tab-button:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+        .tab-button.active { background: white; color: #667eea; }
+        .content-section { display: none; background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+        .content-section.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .chart-container { position: relative; height: 400px; margin: 20px 0; }
+        .search-container { margin: 20px 0; display: flex; gap: 10px; align-items: center; }
+        .search-input { flex: 1; padding: 12px 20px; border: 2px solid #667eea; border-radius: 10px; font-size: 16px; outline: none; transition: all 0.3s ease; }
+        .search-input:focus { border-color: #764ba2; box-shadow: 0 0 10px rgba(102, 126, 234, 0.3); }
+        .search-info { padding: 10px 20px; background: #e3f2fd; border-radius: 8px; color: #1976d2; font-weight: bold; }
+        .clear-search { padding: 12px 20px; background: #f44336; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s ease; }
+        .clear-search:hover { background: #d32f2f; transform: translateY(-2px); }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 30px; overflow-x: auto; display: block; }
+        .data-table table { width: 100%; min-width: 600px; }
+        .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        .data-table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold; position: sticky; top: 0; }
+        .data-table tr:hover { background: #f5f5f5; }
+        .highlight { background-color: yellow; font-weight: bold; }
+        .loading { text-align: center; padding: 40px; color: #667eea; font-size: 18px; }
+        .error { background: #ffebee; color: #c62828; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .instructions { background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #2196f3; display: flex; align-items: flex-start; gap: 30px; }
+        .instructions-content { flex: 1; }
+        .instructions h3 { color: #1976d2; margin-bottom: 10px; }
+        .instructions ol { margin-left: 20px; margin-bottom: 0; }
+        .instructions li { margin: 5px 0; }
+        .instructions .logo2 { flex-shrink: 0; align-self: center; width: 180px; height: 180px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; }
+        .stat-card h3 { font-size: 14px; margin-bottom: 10px; opacity: 0.9; }
+        .stat-card .number { font-size: 32px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -291,7 +55,7 @@
             <div class="title-with-logo">
                 <img src="Logo Pelabuhan.png" alt="Logo Pelabuhan" class="logo">
                 <h1>SINPELKESPPSK-KENDARI</h1>
-                 <img src="logokkp.png" alt="Logo KKP" class="logo">
+                <img src="logokkp.png" alt="Logo KKP" class="logo">
             </div>
             <p>Dashboard Sistem Informasi Pelayanan Kesyahbandaran PPS Kendari</p>
         </div>
@@ -324,11 +88,9 @@
             <h2>STBLKK (Surat Tanda Bukti Lapor Kedatangan Kapal)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-stblkk"></div>
-            <div class="chart-container">
-                <canvas id="chart-stblkk"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chart-stblkk"></canvas></div>
             <div class="search-container" id="search-container-stblkk" style="display: none;">
-                <input type="text" class="search-input" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" onkeyup="searchData('stblkk', this.value)">
+                <input type="text" class="search-input" placeholder="🔍 Cari data..." onkeyup="searchData('stblkk', this.value)">
                 <button class="clear-search" onclick="clearSearch('stblkk')">Clear</button>
             </div>
             <div class="search-info" id="search-info-stblkk" style="display: none;"></div>
@@ -339,11 +101,9 @@
             <h2>SPB (Surat Persetujuan Berlayar)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-spb"></div>
-            <div class="chart-container">
-                <canvas id="chart-spb"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chart-spb"></canvas></div>
             <div class="search-container" id="search-container-spb" style="display: none;">
-                <input type="text" class="search-input" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" onkeyup="searchData('spb', this.value)">
+                <input type="text" class="search-input" placeholder="🔍 Cari data..." onkeyup="searchData('spb', this.value)">
                 <button class="clear-search" onclick="clearSearch('spb')">Clear</button>
             </div>
             <div class="search-info" id="search-info-spb" style="display: none;"></div>
@@ -354,11 +114,9 @@
             <h2>SKKP (Sertifikat Kelaikan Kapal Perikanan)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-skkp"></div>
-            <div class="chart-container">
-                <canvas id="chart-skkp"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chart-skkp"></canvas></div>
             <div class="search-container" id="search-container-skkp" style="display: none;">
-                <input type="text" class="search-input" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" onkeyup="searchData('skkp', this.value)">
+                <input type="text" class="search-input" placeholder="🔍 Cari data..." onkeyup="searchData('skkp', this.value)">
                 <button class="clear-search" onclick="clearSearch('skkp')">Clear</button>
             </div>
             <div class="search-info" id="search-info-skkp" style="display: none;"></div>
@@ -369,11 +127,9 @@
             <h2>SHTI (Sertifikat Hasil Tangkapan Ikan)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-shti"></div>
-            <div class="chart-container">
-                <canvas id="chart-shti"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chart-shti"></canvas></div>
             <div class="search-container" id="search-container-shti" style="display: none;">
-                <input type="text" class="search-input" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" onkeyup="searchData('shti', this.value)">
+                <input type="text" class="search-input" placeholder="🔍 Cari data..." onkeyup="searchData('shti', this.value)">
                 <button class="clear-search" onclick="clearSearch('shti')">Clear</button>
             </div>
             <div class="search-info" id="search-info-shti" style="display: none;"></div>
@@ -384,11 +140,9 @@
             <h2>Perizinan Pusat</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-perizinan-pusat"></div>
-            <div class="chart-container">
-                <canvas id="chart-perizinan-pusat"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chart-perizinan-pusat"></canvas></div>
             <div class="search-container" id="search-container-perizinan-pusat" style="display: none;">
-                <input type="text" class="search-input" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" onkeyup="searchData('perizinan-pusat', this.value)">
+                <input type="text" class="search-input" placeholder="🔍 Cari data..." onkeyup="searchData('perizinan-pusat', this.value)">
                 <button class="clear-search" onclick="clearSearch('perizinan-pusat')">Clear</button>
             </div>
             <div class="search-info" id="search-info-perizinan-pusat" style="display: none;"></div>
@@ -399,11 +153,9 @@
             <h2>Perizinan Daerah</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-perizinan-daerah"></div>
-            <div class="chart-container">
-                <canvas id="chart-perizinan-daerah"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chart-perizinan-daerah"></canvas></div>
             <div class="search-container" id="search-container-perizinan-daerah" style="display: none;">
-                <input type="text" class="search-input" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" onkeyup="searchData('perizinan-daerah', this.value)">
+                <input type="text" class="search-input" placeholder="🔍 Cari data..." onkeyup="searchData('perizinan-daerah', this.value)">
                 <button class="clear-search" onclick="clearSearch('perizinan-daerah')">Clear</button>
             </div>
             <div class="search-info" id="search-info-perizinan-daerah" style="display: none;"></div>
@@ -414,11 +166,9 @@
             <h2>PKL (Perjanjian Kerja Laut)</h2>
             <div class="loading">Memuat data...</div>
             <div class="stats-grid" id="stats-pkl"></div>
-            <div class="chart-container">
-                <canvas id="chart-pkl"></canvas>
-            </div>
+            <div class="chart-container"><canvas id="chart-pkl"></canvas></div>
             <div class="search-container" id="search-container-pkl" style="display: none;">
-                <input type="text" class="search-input" placeholder="🔍 Cari data... (ketik minimal 2 karakter)" onkeyup="searchData('pkl', this.value)">
+                <input type="text" class="search-input" placeholder="🔍 Cari data..." onkeyup="searchData('pkl', this.value)">
                 <button class="clear-search" onclick="clearSearch('pkl')">Clear</button>
             </div>
             <div class="search-info" id="search-info-pkl" style="display: none;"></div>
@@ -427,612 +177,7 @@
     </div>
     
     <script>
-        const sheetUrls = {
-            'stblkk': 'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=1397215787',
-            'spb': 'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=698992828',
-            'skkp': 'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=1309011826',
-            'shti': 'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=566117585',
-            'perizinan-pusat': 'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=264793408',
-            'perizinan-daerah': 'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=583377591',
-            'pkl': 'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=2099648587'
-        };
-        
-        const charts = {};
-        const loadedData = {};
-        
-        function showTab(tabName) {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active');
-            });
-            
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-            
-            if (!loadedData[tabName]) {
-                loadData(tabName);
-            }
-        }
-        
-        function loadData(sheetName) {
-            const url = sheetUrls[sheetName];
-            const section = document.getElementById(sheetName);
-            
-            Papa.parse(url, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                dynamicTyping: false,
-                complete: function(results) {
-                    console.log(`[${sheetName}] Data loaded:`, results.data.length, 'rows');
-                    console.log(`[${sheetName}] Sample data:`, results.data.slice(0, 3));
-                    loadedData[sheetName] = results.data;
-                    displayData(sheetName, results.data);
-                },
-                error: function(error) {
-                    section.querySelector('.loading').innerHTML = `
-                        <div class="error">
-                            <strong>Error:</strong> Tidak dapat memuat data. 
-                            Pastikan Google Sheet sudah dipublikasikan ke web sebagai CSV.
-                            <br><br>
-                            <small>Error: ${error.message}</small>
-                        </div>
-                    `;
-                }
-            });
-        }
-        
-        function displayData(sheetName, data) {
-            const section = document.getElementById(sheetName);
-            section.querySelector('.loading').style.display = 'none';
-            
-            if (data.length === 0) {
-                section.innerHTML += '<div class="error">Tidak ada data yang ditemukan.</div>';
-                return;
-            }
-            
-            document.getElementById(`search-container-${sheetName}`).style.display = 'flex';
-            
-            createStats(sheetName, data);
-            createChart(sheetName, data);
-            createTable(sheetName, data);
-        }
-        
-        function createStats(sheetName, data) {
-            const statsContainer = document.getElementById(`stats-${sheetName}`);
-            const totalRecords = data.length;
-            
-            const columns = Object.keys(data[0]);
-            const numColumns = columns.length;
-            
-            let filledCells = 0;
-            data.forEach(row => {
-                Object.values(row).forEach(value => {
-                    if (value && value.toString().trim() !== '') filledCells++;
-                });
-            });
-            
-            const completeness = ((filledCells / (totalRecords * numColumns)) * 100).toFixed(1);
-            
-            statsContainer.innerHTML = `
-                <div class="stat-card">
-                    <h3>Total Records</h3>
-                    <div class="number">${totalRecords}</div>
-                </div>
-                <div class="stat-card">
-                    <h3>Kelengkapan Data</h3>
-                    <div class="number">${completeness}%</div>
-                </div>
-            `;
-        }
-        
-        function searchData(sheetName, query) {
-            if (query.length < 2) {
-                createTable(sheetName, loadedData[sheetName]);
-                document.getElementById(`search-info-${sheetName}`).style.display = 'none';
-                return;
-            }
-            
-            const data = loadedData[sheetName];
-            const searchQuery = query.toLowerCase();
-            
-            const filteredData = data.filter(row => {
-                return Object.values(row).some(value => {
-                    return value && value.toString().toLowerCase().includes(searchQuery);
-                });
-            });
-            
-            const searchInfo = document.getElementById(`search-info-${sheetName}`);
-            searchInfo.style.display = 'block';
-            searchInfo.textContent = `Ditemukan ${filteredData.length} dari ${data.length} data`;
-            
-            createTable(sheetName, filteredData, query);
-        }
-        
-        function clearSearch(sheetName) {
-            const searchInput = document.querySelector(`#search-container-${sheetName} .search-input`);
-            searchInput.value = '';
-            createTable(sheetName, loadedData[sheetName]);
-            document.getElementById(`search-info-${sheetName}`).style.display = 'none';
-        }
-        
-        function highlightText(text, query) {
-            if (!query || query.length < 2) return text;
-            
-            const regex = new RegExp(`(${query})`, 'gi');
-            return text.toString().replace(regex, '<span class="highlight">$1</span>');
-        }
-        
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-            
-            const cleanDate = dateStr.toString().trim();
-            if (cleanDate === '') return null;
-            
-            // Coba berbagai format tanggal
-            const formats = [
-                // Format DD/MM/YYYY atau DD-MM-YYYY
-                {
-                    regex: /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/,
-                    parser: (m) => {
-                        const day = parseInt(m[1]);
-                        const month = parseInt(m[2]);
-                        const year = parseInt(m[3]);
-                        // Cek apakah ini format Indonesia (DD/MM/YYYY)
-                        if (day > 12 || (day <= 12 && month <= 12)) {
-                            return { year, month, day };
-                        }
-                        return null;
-                    }
-                },
-                // Format YYYY-MM-DD atau YYYY/MM/DD
-                {
-                    regex: /^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/,
-                    parser: (m) => ({
-                        year: parseInt(m[1]),
-                        month: parseInt(m[2]),
-                        day: parseInt(m[3])
-                    })
-                },
-                // Format DD MMM YYYY (contoh: 15 Jan 2024)
-                {
-                    regex: /^(\d{1,2})\s+(jan|feb|mar|apr|mei|may|jun|jul|agu|aug|sep|okt|oct|nov|des|dec)[a-z]*\s+(\d{4})$/i,
-                    parser: (m) => {
-                        const monthMap = {
-                            'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'mei': 5, 'may': 5,
-                            'jun': 6, 'jul': 7, 'agu': 8, 'aug': 8, 'sep': 9,
-                            'okt': 10, 'oct': 10, 'nov': 11, 'des': 12, 'dec': 12
-                        };
-                        const monthStr = m[2].toLowerCase().substring(0, 3);
-                        return {
-                            year: parseInt(m[3]),
-                            month: monthMap[monthStr],
-                            day: parseInt(m[1])
-                        };
-                    }
-                }
-            ];
-            
-            for (const format of formats) {
-                const match = cleanDate.match(format.regex);
-                if (match) {
-                    const parsed = format.parser(match);
-                    if (parsed && parsed.month >= 1 && parsed.month <= 12 && 
-                        parsed.day >= 1 && parsed.day <= 31 && 
-                        parsed.year >= 2000 && parsed.year <= 2100) {
-                        return new Date(parsed.year, parsed.month - 1, parsed.day);
-                    }
-                }
-            }
-            
-            // Fallback: coba parse langsung
-            try {
-                const d = new Date(cleanDate);
-                if (!isNaN(d.getTime()) && d.getFullYear() >= 2000 && d.getFullYear() <= 2100) {
-                    return d;
-                }
-            } catch (e) {}
-            
-            return null;
-        }
-        
-        function findDateColumn(columns, sheetName) {
-            const lower = columns.map(c => c.toLowerCase().trim());
-            
-            const patterns = {
-                'stblkk': ['tgl', 'tanggal', 'date', 'tgl stblkk', 'tanggal stblkk'],
-                'spb': ['tgl', 'tanggal', 'date', 'tgl spb', 'tanggal spb'],
-                'skkp': ['tgl', 'tanggal', 'date', 'tgl skkp', 'tanggal skkp'],
-                'shti': ['tgl', 'tanggal', 'date', 'tgl shti', 'tanggal shti'],
-                'perizinan-pusat': ['tanggal', 'tgl', 'date', 'tanggal akhir', 'tgl akhir'],
-                'perizinan-daerah': ['tanggal', 'tgl', 'date', 'tanggal akhir', 'tgl akhir'],
-                'pkl': ['tanggal', 'tgl', 'date']
-            };
-            
-            const searchPatterns = patterns[sheetName] || ['tanggal', 'tgl', 'date'];
-            
-            // Cari kolom yang cocok
-            for (const pattern of searchPatterns) {
-                for (let i = 0; i < lower.length; i++) {
-                    if (lower[i] === pattern || lower[i].includes(pattern)) {
-                        console.log(`[${sheetName}] Kolom tanggal ditemukan: "${columns[i]}" (index: ${i})`);
-                        return columns[i];
-                    }
-                }
-            }
-            
-            console.warn(`[${sheetName}] Kolom tanggal tidak ditemukan. Kolom tersedia:`, columns);
-            return null;
-        }
-        
-        function createChart(sheetName, data) {
-            const canvas = document.getElementById(`chart-${sheetName}`);
-            const ctx = canvas.getContext('2d');
-            
-            if (charts[sheetName]) {
-                charts[sheetName].destroy();
-            }
-            
-            const columns = Object.keys(data[0]);
-            const dateColumn = findDateColumn(columns, sheetName);
-            
-            if (!dateColumn) {
-                canvas.parentElement.innerHTML = `<div class="error">
-                    Kolom tanggal tidak ditemukan.<br>
-                    Kolom tersedia: ${columns.join(', ')}<br><br>
-                    <small>Tips: Pastikan ada kolom dengan nama "Tanggal" atau "Tgl"</small>
-                </div>`;
-                return;
-            }
-            
-            const monthlyMap = new Map();
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            
-            let validCount = 0;
-            let invalidCount = 0;
-            const debugInfo = [];
-            const invalidSamples = [];
-            
-            data.forEach((row, idx) => {
-                const dateValue = row[dateColumn];
-                const parsedDate = parseDate(dateValue);
-                
-                if (parsedDate) {
-                    validCount++;
-                    const year = parsedDate.getFullYear();
-                    const month = parsedDate.getMonth();
-                    
-                    const key = `${year}-${String(month + 1).padStart(2, '0')}`;
-                    const label = `${monthNames[month]} ${year}`;
-                    
-                    if (!monthlyMap.has(key)) {
-                        monthlyMap.set(key, { label: label, count: 0, date: new Date(year, month, 1) });
-                    }
-                    monthlyMap.get(key).count++;
-                    
-                    if (idx < 5) {
-                        debugInfo.push(`Row ${idx + 1}: "${dateValue}" → ${parsedDate.toLocaleDateString('id-ID')}`);
-                    }
-                } else if (dateValue && dateValue.toString().trim() !== '') {
-                    invalidCount++;
-                    if (invalidSamples.length < 5) {
-                        invalidSamples.push(`Row ${idx + 1}: "${dateValue}"`);
-                    }
-                }
-            });
-            
-            console.log(`[${sheetName}] Parsing hasil:`);
-            console.log(`- Valid: ${validCount}`);
-            console.log(`- Invalid: ${invalidCount}`);
-            console.log(`- Total: ${data.length}`);
-            console.log(`- Kolom: "${dateColumn}"`);
-            if (debugInfo.length > 0) {
-                console.log('- Contoh valid:', debugInfo);
-            }
-            if (invalidSamples.length > 0) {
-                console.log('- Contoh invalid:', invalidSamples);
-            }
-            
-            const sortedEntries = Array.from(monthlyMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-            
-            const labels = sortedEntries.map(entry => entry[1].label);
-            const counts = sortedEntries.map(entry => entry[1].count);
-            
-            if (sortedEntries.length === 0) {
-                canvas.parentElement.innerHTML = `<div class="error">
-                    Tidak ada data tanggal yang valid ditemukan.<br>
-                    <strong>Valid:</strong> ${validCount} | <strong>Invalid:</strong> ${invalidCount} | <strong>Total:</strong> ${data.length}<br>
-                    <strong>Kolom yang digunakan:</strong> ${dateColumn}<br><br>
-                    ${invalidSamples.length > 0 ? '<strong>Contoh data yang gagal di-parse:</strong><div class="debug-info">' + invalidSamples.join('<br>') + '</div>' : ''}
-                    <small>Tips: Pastikan format tanggal berupa DD/MM/YYYY atau YYYY-MM-DD</small>
-                </div>`;
-                return;
-            }
-            
-            const chartConfig = getChartConfig(sheetName, labels, counts, validCount, data.length);
-            
-            charts[sheetName] = new Chart(ctx, chartConfig);
-        }
-        
-        function getChartConfig(sheetName, labels, counts, validCount, totalCount) {
-            const colors = [
-                'rgba(102, 126, 234, 0.8)',
-                'rgba(118, 75, 162, 0.8)',
-                'rgba(237, 100, 166, 0.8)',
-                'rgba(255, 154, 158, 0.8)',
-                'rgba(250, 208, 196, 0.8)',
-                'rgba(154, 236, 219, 0.8)',
-                'rgba(66, 214, 164, 0.8)',
-                'rgba(46, 213, 115, 0.8)',
-                'rgba(72, 219, 251, 0.8)',
-                'rgba(83, 82, 237, 0.8)',
-                'rgba(254, 202, 87, 0.8)',
-                'rgba(255, 107, 107, 0.8)'
-            ];
-            
-            if (sheetName === 'stblkk' || sheetName === 'skkp' || sheetName === 'pkl') {
-                return {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Jumlah Data per Bulan',
-                            data: counts,
-                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                            borderColor: 'rgba(102, 126, 234, 1)',
-                            borderWidth: 2,
-                            borderRadius: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            },
-                            title: {
-                                display: true,
-                                text: `Grafik Batang - ${sheetName.toUpperCase()} (${validCount}/${totalCount} data valid)`,
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `Jumlah: ${context.parsed.y}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    precision: 0
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Jumlah Data'
-                                }
-                            },
-                            x: {
-                                ticks: {
-                                    maxRotation: 45,
-                                    minRotation: 45
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Bulan'
-                                }
-                            }
-                        }
-                    }
-                };
-            }
-            
-            if (sheetName === 'spb' || sheetName === 'shti') {
-                return {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Trend Data per Bulan',
-                            data: counts,
-                            backgroundColor: 'rgba(118, 75, 162, 0.2)',
-                            borderColor: 'rgba(118, 75, 162, 1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            pointBackgroundColor: 'rgba(118, 75, 162, 1)',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
-                            },
-                            title: {
-                                display: true,
-                                text: `Grafik Garis - ${sheetName.toUpperCase()} (${validCount}/${totalCount} data valid)`,
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    precision: 0
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Jumlah Data'
-                                }
-                            },
-                            x: {
-                                ticks: {
-                                    maxRotation: 45,
-                                    minRotation: 45
-                                },
-                                title: {
-                                    display: true,
-                                    text: 'Bulan'
-                                }
-                            }
-                        }
-                    }
-                };
-            }
-            
-            if (sheetName === 'perizinan-pusat' || sheetName === 'perizinan-daerah') {
-                return {
-                    type: 'doughnut',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Distribusi Data',
-                            data: counts,
-                            backgroundColor: colors.slice(0, labels.length),
-                            borderColor: '#fff',
-                            borderWidth: 2,
-                            hoverOffset: 10
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'right',
-                                labels: {
-                                    padding: 15,
-                                    font: {
-                                        size: 11
-                                    }
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: `Diagram Donat - ${sheetName.toUpperCase()} (${validCount}/${totalCount} data valid)`,
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.parsed || 0;
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = ((value / total) * 100).toFixed(1);
-                                        return `${label}: ${value} (${percentage}%)`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
-            }
-            
-            return {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Jumlah Data per Bulan',
-                        data: counts,
-                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
-                        borderColor: 'rgba(102, 126, 234, 1)',
-                        borderWidth: 2,
-                        borderRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        title: {
-                            display: true,
-                            text: `Grafik Distribusi per Bulan - ${sheetName.toUpperCase()}`,
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1,
-                                precision: 0
-                            }
-                        }
-                    }
-                }
-            };
-        }
-        
-        function createTable(sheetName, data, searchQuery = '') {
-            const tableContainer = document.getElementById(`table-${sheetName}`);
-            
-            if (data.length === 0) {
-                tableContainer.innerHTML = '<div class="error">Tidak ada data yang cocok dengan pencarian.</div>';
-                return;
-            }
-            
-            const columns = Object.keys(data[0]);
-            
-            let tableHTML = '<table><thead><tr>';
-            columns.forEach(col => {
-                tableHTML += `<th>${col}</th>`;
-            });
-            tableHTML += '</tr></thead><tbody>';
-            
-            data.forEach(row => {
-                tableHTML += '<tr>';
-                columns.forEach(col => {
-                    const cellValue = row[col] || '';
-                    if (searchQuery && searchQuery.length >= 2) {
-                        tableHTML += `<td>${highlightText(cellValue, searchQuery)}</td>`;
-                    } else {
-                        tableHTML += `<td>${cellValue}</td>`;
-                    }
-                });
-                tableHTML += '</tr>';
-            });
-            
-            tableHTML += '</tbody></table>';
-            tableContainer.innerHTML = tableHTML;
-        }
-        
-        window.onload = function() {
-            loadData('stblkk');
-        };
+const sheetUrls={'stblkk':'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=1397215787','spb':'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=698992828','skkp':'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=1309011826','shti':'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=566117585','perizinan-pusat':'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=264793408','perizinan-daerah':'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=583377591','pkl':'https://docs.google.com/spreadsheets/d/1eqJs6dkRA_kKwDzpWxLlZ83lNh1qhi5zA19gw9c6254/export?format=csv&gid=2099648587'},charts={},loadedData={};function showTab(e){document.querySelectorAll('.content-section').forEach(e=>e.classList.remove('active')),document.querySelectorAll('.tab-button').forEach(e=>e.classList.remove('active')),document.getElementById(e).classList.add('active'),event.target.classList.add('active'),loadedData[e]||loadData(e)}function loadData(e){Papa.parse(sheetUrls[e],{download:!0,header:!0,skipEmptyLines:!0,dynamicTyping:!1,complete:function(t){loadedData[e]=t.data,displayData(e,t.data)},error:function(t){document.getElementById(e).querySelector('.loading').innerHTML=`<div class="error"><strong>Error:</strong> Tidak dapat memuat data.<br><small>${t.message}</small></div>`}})}function displayData(e,t){const a=document.getElementById(e);if(a.querySelector('.loading').style.display='none',0===t.length)return void(a.innerHTML+='<div class="error">Tidak ada data.</div>');document.getElementById(`search-container-${e}`).style.display='flex',createStats(e,t),createChart(e,t),createTable(e,t)}function createStats(e,t){const a=document.getElementById(`stats-${e}`),s=t.length,r=Object.keys(t[0]).length;let n=0;t.forEach(e=>{Object.values(e).forEach(e=>{e&&''!==e.toString().trim()&&n++})});const l=((n/(s*r))*100).toFixed(1);a.innerHTML=`<div class="stat-card"><h3>Total Records</h3><div class="number">${s}</div></div><div class="stat-card"><h3>Kelengkapan Data</h3><div class="number">${l}%</div></div>`}function searchData(e,t){if(t.length<2)return createTable(e,loadedData[e]),void(document.getElementById(`search-info-${e}`).style.display='none');const a=loadedData[e].filter(e=>Object.values(e).some(e=>e&&e.toString().toLowerCase().includes(t.toLowerCase()))),s=document.getElementById(`search-info-${e}`);s.style.display='block',s.textContent=`Ditemukan ${a.length} dari ${loadedData[e].length} data`,createTable(e,a,t)}function clearSearch(e){document.querySelector(`#search-container-${e} .search-input`).value='',createTable(e,loadedData[e]),document.getElementById(`search-info-${e}`).style.display='none'}function highlightText(e,t){return t&&t.length>=2?e.toString().replace(new RegExp(`(${t})`,'gi'),'<span class="highlight">$1</span>'):e}function parseDate(e){if(!e)return null;const t=e.toString().trim();if(''===t)return null;const a={'januari':1,'februari':2,'maret':3,'april':4,'mei':5,'juni':6,'juli':7,'agustus':8,'september':9,'oktober':10,'november':11,'desember':12,'january':1,'february':2,'march':3,'may':5,'june':6,'july':7,'august':8,'october':10,'december':12,'jan':1,'feb':2,'mar':3,'apr':4,'agu':8,'sep':9,'okt':10,'nov':11,'des':12,'aug':8,'oct':10,'dec':12},s=[{regex:/^(\d{1,2})[\/\-\.]([a-z]+)[\/\-\.](\d{4})$/i,parser:e=>{const t=parseInt(e[1]),s=e[2].toLowerCase(),r=parseInt(e[3]);let n=null;for(const[e,t]of Object.entries(a))if(s===e||s.startsWith(e.substring(0,3))){n=t;break}return n?{year:r,month:n,day:t}:null}},{regex:/^(\d{1,2})\s+([a-z]+)\s+(\d{4})$/i,parser:e=>{const t=parseInt(e[1]),s=e[2].toLowerCase(),r=parseInt(e[3]);let n=null;for(const[e,t]of Object.entries(a))if(s===e||s.startsWith(e.substring(0,3))){n=t;break}return n?{year:r,month:n,day:t}:null}},{regex:/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/,parser:e=>{const t=parseInt(e[1]),a=parseInt(e[2]),s=parseInt(e[3]);return t>=1&&t<=31&&a>=1&&a<=12?{year:s,month:a,day:t}:null}},{regex:/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/,parser:e=>({year:parseInt(e[1]),month:parseInt(e[2]),day:parseInt(e[3])})}];for(const e of s){const a=t.match(e.regex);if(a){const t=e.parser(a);if(t&&t.month>=1&&t.month<=12&&t.day>=1&&t.day<=31&&t.year>=2e3&&t.year<=2100)return new Date(t.year,t.month-1,t.day)}}try{const e=new Date(t);if(!isNaN(e.getTime())&&e.getFullYear()>=2e3&&e.getFullYear()<=2100)return e}catch(e){}return null}function findDateColumn(e,t){const a=e.map(e=>e.toLowerCase().trim()),s={'stblkk':['tgl','tanggal','date'],'spb':['tgl','tanggal','date'],'skkp':['tgl','tanggal','date'],'shti':['tgl','tanggal','date'],'perizinan-pusat':['tanggal','tgl','date'],'perizinan-daerah':['tanggal','tgl','date'],'pkl':['tanggal','tgl','date']}[t]||['tanggal','tgl','date'];for(const t of s)for(let s=0;s<a.length;s++)if(a[s]===t||a[s].includes(t))return e[s];return null}function createChart(e,t){const a=document.getElementById(`chart-${e}`),s=a.getContext('2d');charts[e]&&charts[e].destroy();const r=Object.keys(t[0]),n=findDateColumn(r,e);if(!n)return void(a.parentElement.innerHTML=`<div class="error">Kolom tanggal tidak ditemukan.<br>Kolom: ${r.join(', ')}</div>`);const l=new Map,o=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];let d=0,c=0;t.forEach(e=>{const t=parseDate(e[n]);if(t){d++;const e=t.getFullYear(),a=t.getMonth(),s=`${e}-${String(a+1).padStart(2,'0')}`,r=`${o[a]} ${e}`;l.has(s)||l.set(s,{label:r,count:0}),l.get(s).count++}else e[n]&&''!==e[n].toString().trim()&&c++});const i=Array.from(l.entries()).sort((e,t)=>e[0].localeCompare(t[0]));if(0===i.length)return void(a.parentElement.innerHTML=`<div class="error">Tidak ada data tanggal valid.<br>Valid: ${d} | Invalid: ${c}</div>`);const g=i.map(e=>e[1].label),u=i.map(e=>e[1].count);charts[e]=new Chart(s,getChartConfig(e,g,u,d,t.length))}function getChartConfig(e,t,a,s,r){const n=['rgba(102,126,234,0.8)','rgba(118,75,162,0.8)','rgba(237,100,166,0.8)','rgba(255,154,158,0.8)','rgba(250,208,196,0.8)','rgba(154,236,219,0.8)','rgba(66,214,164,0.8)','rgba(46,213,115,0.8)','rgba(72,219,251,0.8)','rgba(83,82,237,0.8)','rgba(254,202,87,0.8)','rgba(255,107,107,0.8)'],l={responsive:!0,maintainAspectRatio:!1,plugins:{legend:{display:!0},title:{display:!0,text:`${e.toUpperCase()} (${s}/${r} valid)`,font:{size:16,weight:'bold'}}}};if('stblkk'===e||'skkp'===e||'pkl'===e)return{type:'bar',data:{labels:t,datasets:[{label:'Jumlah Data',data:a,backgroundColor:'rgba(102,126,234,0.8)',borderColor:'rgba(102,126,234,1)',borderWidth:2,borderRadius:8}]},options:{...l,scales:{y:{beginAtZero:!0,ticks:{stepSize:1}},x:{ticks:{maxRotation:45,minRotation:45}}}}};if('spb'===e||'shti'===e)return{type:'line',data:{labels:t,datasets:[{label:'Trend Data',data:a,backgroundColor:'rgba(118,75,162,0.2)',borderColor:'rgba(118,75,162,1)',borderWidth:3,fill:!0,tension:.4,pointRadius:5}]},options:{...l,scales:{y:{beginAtZero:!0,ticks:{stepSize:1}},x:{ticks:{maxRotation:45,minRotation:45}}}}};if('perizinan-pusat'===e||'perizinan-daerah'===e)return{type:'doughnut',data:{labels:t,datasets:[{label:'Distribusi',data:a,backgroundColor:n.slice(0,t.length),borderColor:'#fff',borderWidth:2}]},options:l};return{type:'bar',data:{labels:t,datasets:[{label:'Jumlah Data',data:a,backgroundColor:'rgba(102,126,234,0.8)',borderWidth:2}]},options:{...l,scales:{y:{beginAtZero:!0}}}}}function createTable(e,t,a=''){const s=document.getElementById(`table-${e}`);if(0===t.length)return void(s.innerHTML='<div class="error">Tidak ada data.</div>');const r=Object.keys(t[0]);let n='<table><thead><tr>';r.forEach(e=>{n+=`<th>${e}</th>`}),n+='</tr></thead><tbody>',t.forEach(e=>{n+='<tr>',r.forEach(t=>{const s=e[t]||'';n+=a&&a.length>=2?`<td>${highlightText(s,a)}</td>`:`<td>${s}</td>`}),n+='</tr>'}),n+='</tbody></table>',s.innerHTML=n}window.onload=function(){loadData('stblkk')};
     </script>
 </body>
 </html>
