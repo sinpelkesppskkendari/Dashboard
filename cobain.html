@@ -465,7 +465,10 @@
                 download: true,
                 header: true,
                 skipEmptyLines: true,
+                dynamicTyping: false,
                 complete: function(results) {
+                    console.log(`[${sheetName}] Data loaded:`, results.data.length, 'rows');
+                    console.log(`[${sheetName}] Sample data:`, results.data.slice(0, 3));
                     loadedData[sheetName] = results.data;
                     displayData(sheetName, results.data);
                 },
@@ -508,7 +511,7 @@
             let filledCells = 0;
             data.forEach(row => {
                 Object.values(row).forEach(value => {
-                    if (value && value.trim() !== '') filledCells++;
+                    if (value && value.toString().trim() !== '') filledCells++;
                 });
             });
             
@@ -564,47 +567,72 @@
         }
         
         function parseDate(dateStr) {
-            if (!dateStr || dateStr.trim() === '') return null;
+            if (!dateStr) return null;
             
-            const cleanDate = dateStr.trim();
+            const cleanDate = dateStr.toString().trim();
+            if (cleanDate === '') return null;
             
-            let match = cleanDate.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
-            if (match) {
-                const day = parseInt(match[1]);
-                const month = parseInt(match[2]);
-                const year = parseInt(match[3]);
-                
-                if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 1900 && year <= 2100) {
-                    return new Date(year, month - 1, day);
+            // Coba berbagai format tanggal
+            const formats = [
+                // Format DD/MM/YYYY atau DD-MM-YYYY
+                {
+                    regex: /^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/,
+                    parser: (m) => {
+                        const day = parseInt(m[1]);
+                        const month = parseInt(m[2]);
+                        const year = parseInt(m[3]);
+                        // Cek apakah ini format Indonesia (DD/MM/YYYY)
+                        if (day > 12 || (day <= 12 && month <= 12)) {
+                            return { year, month, day };
+                        }
+                        return null;
+                    }
+                },
+                // Format YYYY-MM-DD atau YYYY/MM/DD
+                {
+                    regex: /^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/,
+                    parser: (m) => ({
+                        year: parseInt(m[1]),
+                        month: parseInt(m[2]),
+                        day: parseInt(m[3])
+                    })
+                },
+                // Format DD MMM YYYY (contoh: 15 Jan 2024)
+                {
+                    regex: /^(\d{1,2})\s+(jan|feb|mar|apr|mei|may|jun|jul|agu|aug|sep|okt|oct|nov|des|dec)[a-z]*\s+(\d{4})$/i,
+                    parser: (m) => {
+                        const monthMap = {
+                            'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'mei': 5, 'may': 5,
+                            'jun': 6, 'jul': 7, 'agu': 8, 'aug': 8, 'sep': 9,
+                            'okt': 10, 'oct': 10, 'nov': 11, 'des': 12, 'dec': 12
+                        };
+                        const monthStr = m[2].toLowerCase().substring(0, 3);
+                        return {
+                            year: parseInt(m[3]),
+                            month: monthMap[monthStr],
+                            day: parseInt(m[1])
+                        };
+                    }
+                }
+            ];
+            
+            for (const format of formats) {
+                const match = cleanDate.match(format.regex);
+                if (match) {
+                    const parsed = format.parser(match);
+                    if (parsed && parsed.month >= 1 && parsed.month <= 12 && 
+                        parsed.day >= 1 && parsed.day <= 31 && 
+                        parsed.year >= 2000 && parsed.year <= 2100) {
+                        return new Date(parsed.year, parsed.month - 1, parsed.day);
+                    }
                 }
             }
             
-            match = cleanDate.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
-            if (match) {
-                const year = parseInt(match[1]);
-                const month = parseInt(match[2]);
-                const day = parseInt(match[3]);
-                
-                if (month >= 1 && month <= 12 && day >= 1 && day <= 31 && year >= 1900 && year <= 2100) {
-                    return new Date(year, month - 1, day);
-                }
-            }
-            
-            match = cleanDate.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-            if (match) {
-                const first = parseInt(match[1]);
-                const second = parseInt(match[2]);
-                const year = parseInt(match[3]);
-                
-                if (first <= 12 && second <= 31) {
-                    return new Date(year, first - 1, second);
-                }
-            }
-            
+            // Fallback: coba parse langsung
             try {
-                const parsed = new Date(cleanDate);
-                if (!isNaN(parsed.getTime()) && parsed.getFullYear() >= 1900 && parsed.getFullYear() <= 2100) {
-                    return parsed;
+                const d = new Date(cleanDate);
+                if (!isNaN(d.getTime()) && d.getFullYear() >= 2000 && d.getFullYear() <= 2100) {
+                    return d;
                 }
             } catch (e) {}
             
@@ -615,22 +643,24 @@
             const lower = columns.map(c => c.toLowerCase().trim());
             
             const patterns = {
-                'stblkk': ['tgl stblkk', 'tanggal stblkk', 'tgl', 'tanggal', 'date'],
-                'spb': ['tgl spb', 'tanggal spb', 'tgl', 'tanggal', 'date'],
-                'skkp': ['tgl skkp', 'tanggal skkp', 'tgl', 'tanggal', 'date'],
-                'shti': ['tgl shti', 'tanggal shti', 'tgl', 'tanggal', 'date'],
-                'perizinan-pusat': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl', 'date'],
-                'perizinan-daerah': ['tanggal akhir', 'tgl akhir', 'akhir', 'tanggal', 'tgl', 'date'],
+                'stblkk': ['tgl', 'tanggal', 'date', 'tgl stblkk', 'tanggal stblkk'],
+                'spb': ['tgl', 'tanggal', 'date', 'tgl spb', 'tanggal spb'],
+                'skkp': ['tgl', 'tanggal', 'date', 'tgl skkp', 'tanggal skkp'],
+                'shti': ['tgl', 'tanggal', 'date', 'tgl shti', 'tanggal shti'],
+                'perizinan-pusat': ['tanggal', 'tgl', 'date', 'tanggal akhir', 'tgl akhir'],
+                'perizinan-daerah': ['tanggal', 'tgl', 'date', 'tanggal akhir', 'tgl akhir'],
                 'pkl': ['tanggal', 'tgl', 'date']
             };
             
             const searchPatterns = patterns[sheetName] || ['tanggal', 'tgl', 'date'];
             
+            // Cari kolom yang cocok
             for (const pattern of searchPatterns) {
-                const idx = lower.findIndex(col => col.includes(pattern));
-                if (idx !== -1) {
-                    console.log(`[${sheetName}] Kolom tanggal ditemukan: "${columns[idx]}" (pattern: "${pattern}")`);
-                    return columns[idx];
+                for (let i = 0; i < lower.length; i++) {
+                    if (lower[i] === pattern || lower[i].includes(pattern)) {
+                        console.log(`[${sheetName}] Kolom tanggal ditemukan: "${columns[i]}" (index: ${i})`);
+                        return columns[i];
+                    }
                 }
             }
             
@@ -650,7 +680,11 @@
             const dateColumn = findDateColumn(columns, sheetName);
             
             if (!dateColumn) {
-                canvas.parentElement.innerHTML = '<div class="error">Kolom tanggal tidak ditemukan. Kolom tersedia: ' + columns.join(', ') + '</div>';
+                canvas.parentElement.innerHTML = `<div class="error">
+                    Kolom tanggal tidak ditemukan.<br>
+                    Kolom tersedia: ${columns.join(', ')}<br><br>
+                    <small>Tips: Pastikan ada kolom dengan nama "Tanggal" atau "Tgl"</small>
+                </div>`;
                 return;
             }
             
@@ -660,6 +694,7 @@
             let validCount = 0;
             let invalidCount = 0;
             const debugInfo = [];
+            const invalidSamples = [];
             
             data.forEach((row, idx) => {
                 const dateValue = row[dateColumn];
@@ -681,16 +716,25 @@
                     if (idx < 5) {
                         debugInfo.push(`Row ${idx + 1}: "${dateValue}" → ${parsedDate.toLocaleDateString('id-ID')}`);
                     }
-                } else if (dateValue && dateValue.trim() !== '') {
+                } else if (dateValue && dateValue.toString().trim() !== '') {
                     invalidCount++;
-                    if (idx < 5) {
-                        debugInfo.push(`Row ${idx + 1}: "${dateValue}" → INVALID`);
+                    if (invalidSamples.length < 5) {
+                        invalidSamples.push(`Row ${idx + 1}: "${dateValue}"`);
                     }
                 }
             });
             
-            console.log(`[${sheetName}] Debug Info:`, debugInfo);
-            console.log(`[${sheetName}] Valid: ${validCount}, Invalid: ${invalidCount}, Total: ${data.length}`);
+            console.log(`[${sheetName}] Parsing hasil:`);
+            console.log(`- Valid: ${validCount}`);
+            console.log(`- Invalid: ${invalidCount}`);
+            console.log(`- Total: ${data.length}`);
+            console.log(`- Kolom: "${dateColumn}"`);
+            if (debugInfo.length > 0) {
+                console.log('- Contoh valid:', debugInfo);
+            }
+            if (invalidSamples.length > 0) {
+                console.log('- Contoh invalid:', invalidSamples);
+            }
             
             const sortedEntries = Array.from(monthlyMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
             
@@ -698,11 +742,13 @@
             const counts = sortedEntries.map(entry => entry[1].count);
             
             if (sortedEntries.length === 0) {
-                canvas.parentElement.innerHTML = `<div class="error">Tidak ada data tanggal yang valid ditemukan. 
-                    <br>Valid: ${validCount}, Invalid: ${invalidCount}, Total: ${data.length}
-                    <br>Kolom yang digunakan: ${dateColumn}
-                    <br><br>Contoh data: 
-                    <div class="debug-info">${debugInfo.join('<br>')}</div></div>`;
+                canvas.parentElement.innerHTML = `<div class="error">
+                    Tidak ada data tanggal yang valid ditemukan.<br>
+                    <strong>Valid:</strong> ${validCount} | <strong>Invalid:</strong> ${invalidCount} | <strong>Total:</strong> ${data.length}<br>
+                    <strong>Kolom yang digunakan:</strong> ${dateColumn}<br><br>
+                    ${invalidSamples.length > 0 ? '<strong>Contoh data yang gagal di-parse:</strong><div class="debug-info">' + invalidSamples.join('<br>') + '</div>' : ''}
+                    <small>Tips: Pastikan format tanggal berupa DD/MM/YYYY atau YYYY-MM-DD</small>
+                </div>`;
                 return;
             }
             
@@ -953,6 +999,12 @@
         
         function createTable(sheetName, data, searchQuery = '') {
             const tableContainer = document.getElementById(`table-${sheetName}`);
+            
+            if (data.length === 0) {
+                tableContainer.innerHTML = '<div class="error">Tidak ada data yang cocok dengan pencarian.</div>';
+                return;
+            }
+            
             const columns = Object.keys(data[0]);
             
             let tableHTML = '<table><thead><tr>';
